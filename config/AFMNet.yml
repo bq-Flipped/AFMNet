@@ -1,0 +1,72 @@
+batch_size: 16
+iters: 77000
+
+model:
+  type: AFMNet_B     
+  num_classes: 2
+#  pretrained: null
+
+train_dataset:
+  type: Dataset
+  dataset_root: ./Crack_seg_lys
+  train_path: ./Crack_seg_lys/train.txt
+  # dataset_root: ./own/train/
+  # train_path: ./own/train/train.txt
+  num_classes: 2
+  mode: train
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 1.5
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      label_padding_value: 0
+      crop_size: [400, 400]
+      category_max_ratio: 1.0
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.5
+      contrast_range: 0.5
+      saturation_range: 0.5
+    - type: Normalize
+
+
+val_dataset:
+  type: Dataset
+  dataset_root: ./Crack_seg_lys
+  val_path: ./Crack_seg_lys/val.txt
+  # dataset_root: ./own/val/
+  # val_path: ./own/val/val.txt
+  num_classes: 2
+  mode: val
+  transforms:
+    - type: Resize
+      target_size: [400, 400]
+    - type: Normalize
+
+
+optimizer:
+  type: AdamW
+  weight_decay: 0.01 
+  beta1: 0.9
+  beta2: 0.999
+
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.005
+  end_lr: 0.0
+  power: 0.9
+  # warmup_iters: 2000
+  # warmup_start_lr: 1.0e-5
+
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: EdgCELoss
+    - type: CrossEntropyLoss
+    - type: EdgCELoss
+    - type: CrossEntropyLoss
+    - type: EdgCELoss
+  coef: [1,1,0.2,0.2,0.2,0.2]
